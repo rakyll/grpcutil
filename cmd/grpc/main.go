@@ -59,7 +59,7 @@ func prepare(workspace, url string) (string, error) {
 		}
 		r = f
 	}
-	f, err := ioutil.TempFile(workspace, "protobuf")
+	f, err := ioutil.TempFile(workspace, "proto")
 	if err != nil {
 		return "", nil
 	}
