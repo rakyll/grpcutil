@@ -32,7 +32,7 @@ func main() {
 
 	var protos []string
 	for _, p := range flag.Args() {
-		path, err := downloadProto(workspace, p)
+		path, err := prepare(workspace, p)
 		if err != nil {
 			log.Fatalf("Cannot download %s: %v", p, err)
 		}
@@ -43,22 +43,27 @@ func main() {
 	}
 }
 
-func downloadProto(workspace, url string) (string, error) {
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		// local file
-		return url, nil
+func prepare(workspace, url string) (string, error) {
+	var r io.Reader
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		res, err := http.Get(url)
+		if err != nil {
+			return "", nil
+		}
+		defer res.Body.Close()
+		r = res.Body
+	} else {
+		f, err := os.Open(url)
+		if err != nil {
+			return "", err
+		}
+		r = f
 	}
-	res, err := http.Get(url)
-	if err != nil {
-		return "", nil
-	}
-	defer res.Body.Close()
-
 	f, err := ioutil.TempFile(workspace, "protobuf")
 	if err != nil {
 		return "", nil
 	}
-	if _, err = io.Copy(f, res.Body); err != nil {
+	if _, err = io.Copy(f, r); err != nil {
 		return "", err
 	}
 	return f.Name(), f.Close()
