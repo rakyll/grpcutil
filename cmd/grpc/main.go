@@ -44,26 +44,27 @@ func main() {
 }
 
 func prepare(workspace, url string) (string, error) {
-	var r io.Reader
+	var rc io.ReadCloser
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		res, err := http.Get(url)
 		if err != nil {
 			return "", nil
 		}
-		defer res.Body.Close()
-		r = res.Body
+		rc = res.Body
 	} else {
 		f, err := os.Open(url)
 		if err != nil {
 			return "", err
 		}
-		r = f
+		rc = f
 	}
+	defer rc.Close()
+
 	f, err := ioutil.TempFile(workspace, "proto")
 	if err != nil {
 		return "", nil
 	}
-	if _, err = io.Copy(f, r); err != nil {
+	if _, err = io.Copy(f, rc); err != nil {
 		return "", err
 	}
 	return f.Name(), f.Close()
