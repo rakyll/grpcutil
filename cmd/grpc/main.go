@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -45,22 +47,26 @@ func main() {
 
 func prepare(workspace, url string) (string, error) {
 	var rc io.ReadCloser
+	var name string
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		res, err := http.Get(url)
 		if err != nil {
 			return "", nil
 		}
 		rc = res.Body
+		name = path.Base(url)
 	} else {
 		f, err := os.Open(url)
 		if err != nil {
 			return "", err
 		}
 		rc = f
+		name = filepath.Base(url)
 	}
 	defer rc.Close()
 
-	f, err := ioutil.TempFile(workspace, "proto")
+	file := filepath.Join(workspace, name)
+	f, err := os.Create(file)
 	if err != nil {
 		return "", nil
 	}
