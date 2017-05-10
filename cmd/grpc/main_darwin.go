@@ -17,7 +17,7 @@ func install(force bool) error {
 	return nil
 }
 
-func gen(protos []string) error {
+func gen(workspace string, protos []string) error {
 	if err := install(false); err != nil {
 		log.Fatalf("Cannot install protoc: %v", err)
 	}
@@ -33,7 +33,10 @@ func gen(protos []string) error {
 		return errors.New("language plugin is not available")
 	}
 
-	args := append(protos, "--go_out=plugins=grpc:.")
+	args := []string{"-I", workspace}
+	args = append(args, protos...)
+	args = append(args, "--go_out=plugins=grpc:"+*o)
+
 	cmd := exec.Command("protoc", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
