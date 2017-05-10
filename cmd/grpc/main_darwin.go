@@ -30,7 +30,7 @@ func gen(workspace string, protos []string) error {
 	}
 	_, ok = whichProtocGen()
 	if !ok {
-		return errors.New("language plugin is not available")
+		return errors.New("language plugin is not available; make sure GOPATH/bin is in your PATH")
 	}
 
 	args := []string{"-I", workspace}
